@@ -1,0 +1,107 @@
+Q22) Give the salespeople’s commissions as percentages instead of decimal numbers. 
+
+mysql>> select sname, comm*100 'commission' from salespeople;
+
+Q23) Find the largest order taken by each salesperson on each date, eliminating those MAX orders which are less than $3000.00 in value.
+
+mysql>> select * from orders a, customer b where a.cnum=b.cnum;
+
+select b.snum, a.odate, a.amt from orders a, customer b where a.cnum=b.cnum;
+
+select b.snum, a.odate, max(a.amt) from orders a, customer b where a.cnum=b.cnum group by b.snum, a.odate;
+
+select b.snum, a.odate, max(a.amt) 'maxorder' from orders a, customer b where a.cnum=b.cnum group by b.snum, a.odate having maxorder>3000;
+
+Q24) List the largest orders for October 3, for each salesperson. 
+
+mysql>> select * from orders a , customer b where a.cnum=b.cnum;
+
+select * from orders a, customer b where a.cnum=b.cnum and a.odate='1996-10-03';
+
+select b.snum, a.amt from orders a, customer b where a.cnum=b.cnum and a.odate='1996-10-03';
+
+select b.snum, max(a.amt) from orders a, customer b where a.cnum=b.cnum and a.odate='1996-10-03' group by b.snum;
+
+Q25. Find all customers located in cities where Serres (SNUM 1002) has customers. 
+
+mysql>> select * from customer where snum = 1002;
+select city from customer where snum = 1002;
+select a.cname, a.city from customer a where city in( select city from customer where snum = 1002);
+
+Q26. Select all customers with a rating above 200.00. 
+mysql>> select * from customer;
+select * from customer where rating> 200;
+
+Q27. Count the number of salespeople currently listing orders in the Orders table. 
+mysql>> select * from orders a, customer b where a.cnum=b.cnum;
+
+select b.snum from orders a, customer b where a.cnum=b.cnum;
+
+select distinct(b.snum) from orders a, customer b where a.cnum=b.cnum;
+
+select count(distinct(b.snum)) 'No.of sales people'from orders a, customer b where a.cnum=b.cnum;
+
+Q28. Write a query that produces all customers serviced by salespeople with a commission above 12%. Output the customer’s name and the salesperson’s rate of commission. 
+mysql>> select * from customer a , salespeople b where a.snum=b.snum;
+
+select * from customer a, salespeople b where a.snum=b.snum and b.comm>0.12;
+
+select a.cname, b.comm from customer a , salespeople b where a.snum = b.snum and b.comm>0.12;
+
+Q29. Find salespeople who have multiple customers.
+mysql>> select * from customers a , salespeople b where a.snum= b.snum;
+
+select b.snum, count(*) from customer a, salespeople b where a.snum=b.snum group by b.snum;
+
+select b.snum, count(*) 'count' from customer a, salespeople b where a.snum=b.snum group by b.snum having count>1;
+ 
+Q30. Find salespeople with customers located in their city. 
+mysql>> select * from salespeople a, customer b where a.snum=b.snum;
+
+select * from salespeople a, customer b where a.snum=b.snum and a.city=b.city;
+
+select a.sname, b.cname, b.city from salespeople a, customer b where a.snum=b.snum and a.city=b.city;
+
+Q31. Find all salespeople whose name starts with ‘P’ and the fourth character is ‘l’.
+mysql>> select * from salespeople;
+
+select * from salespeople where substring(sname,1,1)='P' and substring(sname,4,1)='l';
+
+Q32. Write a query that uses a subquery to obtain all orders for the customer named Cisneros. Assume you do not know his customer number. 
+mysql>> select cnum from customer where cname = "Cisneros";
+
+select * from orders where cnum= ( select cnum from customer where cname = "Cisneros");
+ 
+Q33. Find the largest orders for Serres and Rifkin. 
+mysql>> select b.snum,c.sname,max(a.amt) from orders a, customer b, salespeople c where a.cnum=b.cnum and b.snum=c.snum and (sname='Serres' or sname='Rifkin') group by b.snum;
+
+Q34. Extract the Salespeople table in the following order : SNUM, SNAME, COMMISSION, CITY. 
+mysql>> select snum,sname,comm,city from salespeople order by snum, sname , comm, city;
+
+Q35. Select all customers whose names fall in between ‘A’ and ‘G’ alphabetical range. 
+mysql>> select * from customer;
+select * from customer where substring(cname,1,1) in ('A','B','C','D','E','F','G');
+
+Q36. Incomplete
+
+Q37. Select all orders that are greater than the average for October 4. 
+mysql>> select * from orders;
+
+select avg(amt) from orders where odate='1996-10-04';
+
+select * from orders where amt > (select avg(amt) from orders where odate='1996-10-04');
+
+Q38. Write a select command using a corelated subquery that selects the names and numbers of all customers with ratings equal to the maximum for their city. 
+mysql>> select city, max(rating) from customer group by city;
+
+select a.cname, a.cnum, a.rating,a.city from customer a where a.rating = (select max(b.rating) from customer b where b.city=a.city);
+
+Q39. Write a query that totals the orders for each day and places the results in descending order. 
+mysql>> select odate, sum(amt) 'total' from orders group by odate order by total desc;
+
+Q40. Write a select command that produces the rating followed by the name of each customer in San Jose.
+mysql>> select * from customers;
+ select rating, cname from customers where city'" San Jose";
+
+
+
