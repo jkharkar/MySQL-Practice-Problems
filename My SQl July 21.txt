@@ -1,0 +1,100 @@
+Q41.Find all orders with amounts smaller than any amount for a customer in San Jose. 
+mysql>> 
+select * from customer where city ='San Jose';
+select * from orders a , customer b where a.cnum=b.cnum and b.city = 'San Jose';
+select max(amt) from customer a, orders b where a.cnum=b.cnum and a.city='San Jose';
+select * from orders where amt < (select max(amt) from customer a, orders b where a.cnum=b.cnum and a.city='San Jose');
+
+Q42. Find all orders with above average amounts for their customers. 
+mysql>> 
+select * from orders a , customer b where a.cnum=b.cnum;
+select b.cnum, avg(a.amt) from orders a , customer b where a.cnum=b.cnum group by b.cnum;
+select * from orders c where amt> ( select avg(a.amt) from orders a , customer b where a.cnum=b.cnum and b.cnum=c.cnum group by b.cnum;
+
+Q43. Write a query that selects the highest rating in each city. 
+mysql>>
+select * from customer;
+select city, max(rating) from customer group by city;
+
+Q44. Write a query that calculates the amount of the salesperson’s commission on each order by a customer with a rating above 100.00. 
+mysql>>
+select * from orders a, customer b where a.cnum=b.cnum;
+select b.snum, (c.comm*a.amt) 'commission' from orders a, customer b, salespeople c where a.cnum=b.cnum and b.snum=c.snum;
+select b.snum, a.onum, (c.comm*a.amt) 'commission', b.rating from orders a, customer b, salespeople c where a.cnum=b.cnum and b.snum=c.snum and b.rating>100;
+
+Q45. Count the customers with ratings above San Jose’s average. 
+mysql>>
+select avg(rating) 'Avg Rating' from customer where city ='San Jose';
+select * from customer where rating > (select avg(rating) 'Avg Rating' from customer where city='San Jose');
+
+***Q46. Write a query that produces all pairs of salespeople with themselves as well as duplicate rows with the order reversed. 
+mysql>> 
+select * from salespeople;
+(select * from salespeople) union all (select * from salespeople) order by sname desc;
+
+Q47. Find all salespeople that are located in either Barcelona or London. 
+mysql>>
+select * from salespeople where city in('Barcelona','London');
+
+Q48. Find all salespeople with only one customer. 
+mysql>>
+select * from customer;
+select snum, count(*) from customer group by snum;
+select snum, count(*) 'customerCount' from customer group by snum having customerCount = 1;
+
+***Q49. Write a query that joins the Customer table to itself to find all pairs of customers served by a single salesperson. 
+mysql>>
+select a.cname, b.cname, b.snum from customer a, customer b where a.snum=b.snum and a.cnum!=b.cnum;
+
+Q50. Write a query that will give you all orders for more than $1000.00 
+mysql>>
+select * from orders where amt> 1000;
+
+Q51. Write a query that lists each order number followed by the name of the customer who made that order. 
+mysql>>
+select a.onum, b.cname from orders a, customer b where a.cnum=b.cnum group by a.onum, bcname;
+
+Q52. Write 2 queries that select all salespeople (by name and number) who have customers in their cities who they do not service, one using a join and one a corelated subquery. Which solution is more elegant? 
+mysql>>
+Using Join
+select distinct(a.sname) from salespeople a, customer b where a.city=b.city and a.snum!=b.snum group by a.sname;
+
+Using SubQuery:
+select a.sname, a.snum from salespeople a where a.city in (select b.city from customer b where b.snum!=a.snum);
+
+***Q53. Write a query that selects all customers whose ratings are equal to or greater than ANY (in the SQL sense) of Serres’? 
+mysql>>
+select * from customer where rating >= (select rating from customer where cname ='Serres');
+
+Q54. Write 2 queries that will produce all orders taken on October 3 or October 4. 
+mysql>>
+Query No:1 
+select * from orders where odate in ('1996-10-04','1996-10-03');
+
+Query No:2
+select * from orders where (odate = '1996-10-04' or odate = '1996-10-03');
+
+***Q55. Write a query that produces all pairs of orders by a given customer. Name that customer and eliminate duplicates. 
+mysql>>
+
+Q56. Find only those customers whose ratings are higher than every customer in Rome. 
+mysql>>
+select rating from customer where city ='Rome';
+select * from customer where rating > all (select rating from customer where city = 'Rome');
+
+Q57. Write a query on the Customers table whose output will exclude all customers with a rating <= 100.00, unless they are located in Rome. 
+mysql>>
+select * from customer;
+select * from customer where rating >100 or city ='Rome';
+
+Q58. Find all rows from the Customers table for which the salesperson number is 1001. 
+mysql>>
+select * from customer where snum = 1001;
+
+Q59. Find the total amount in Orders for each salesperson for whom this total is greater than the amount of the largest order in the table. 
+mysql>>
+select max(amt) from orders;
+select b.snum, sum(a.amt) 'total' from orders a, customer b where a.cnum=b.cnum group by b.snum having total > (select max(amt) from orders);
+
+***Q60. Write a query that selects all orders save those with zeroes or NULLs in the amount field. 
+mysql>>
