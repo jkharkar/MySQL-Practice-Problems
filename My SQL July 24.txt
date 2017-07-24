@@ -1,0 +1,108 @@
+Q81. Write a query that will produce the SNUM values of all salespeople with orders currently in the Orders table (without any repeats). 
+mysql>>
+select distinct(b.snum) from orders a , customer b where a.cnum=b.cnum group by b.snum;
+
+Q82. Write a query that lists customers in descending order of rating. Output the rating field first, followed by the customer’s names and numbers. 
+mysql>>
+select rating, cname, cnum from customer by rating desc;
+
+Q83. Find the average commission for salespeople in London. 
+mysql>>
+select avg(comm) from salespeople where city='London';
+
+Q84. Find all orders credited to the same salesperson who services Hoffman (CNUM 2001). 
+mysql>>
+select snum from customer where cnum= 2001;
+select * from orders x, customer y where x.cnum=y.cnum and y.snum = (select snum from customer where cnum= 2001);
+select x.onum, x.amt, x.odate, x.cnum from orders x, customer y where x.cnum=y.cnum and y.snum = (select y.snum from customer z where z.cnum=2001);
+
+Q85. Find all salespeople whose commission is in between 0.10 and 0.12 (both inclusive). 
+mysql>>
+select * from salespeople where comm between 0.10 and 0.12;
+
+Q86. Write a query that will give you the names and cities of all salespeople in London with a commission above 0.10. 
+mysql>>
+select sname, city from salespeople where city ='London' and comm > 0.10;
+
+Q87. What will be the output from the following query? SELECT * FROM ORDERS where (amt < 1000 OR NOT (odate = 10/03/1996 AND cnum > 2003)); 
+mysql>>
+select * from orders where (amt<1000 or not (odate = 10/03/1996 AND cnum > 2003));
++------+---------+------------+------+
+| onum | amt     | odate      | cnum |
++------+---------+------------+------+
+| 3001 |   18.69 | 1996-10-03 | 2008 |
+| 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 3003 |  767.19 | 1996-10-03 | 2001 |
+| 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 3007 |   75.75 | 1996-10-04 | 2002 |
+| 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 3011 | 9891.88 | 1996-10-06 | 2006 |
++------+---------+------------+------+
+
+Q88. Write a query that selects each customer’s smallest order. 
+mysql>>
+select * from orders x, customer y where x.cnum=y.cnum;
+select y.cname, min(x.amt) from orders x, customer y where x.cnum=y.cnum group by y.cname;
+
+Q89. Write a query that selects the first customer in alphabetical order whose name begins with G.
+mysql>>
+select * from customer where cname like 'G%' order by cname;
+select * from customer where cname like 'G%' order by cname limit 1;
+ 
+Q90. Write a query that counts the number of different nonNULL city values in the Customers table.
+mysql>>
+select count(distinct(city)) from customer where city is not null;
+
+Q91. Find the average amount from the Orders table. 
+mysql>>
+select avg(amt) from orders;
+
+Q92. What would be the output from the following query? SELECT * FROM ORDERS WHERE NOT (odate = 10/03/96 OR snum > 1006) AND amt >= 1500); 
+mysql>>
+select * from orders where amt >= 1500;
++------+---------+------------+------+
+| onum | amt     | odate      | cnum |
++------+---------+------------+------+
+| 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 3011 | 9891.88 | 1996-10-06 | 2006 |
++------+---------+------------+------+
+
+Q93. Find all customers who are not located in San Jose and whose rating is above 200. 
+mysql>>
+select * from customer where rating > 200 and city != 'San Jose';
+
+Q94. Give a simpler way to write this query : SELECT snum, sname city, comm FROM salespeople WHERE (comm > + 0.12 OR comm < 0.14); 
+mysql>>
+select * from salespeople;
+
+Q95. Evaluate the following query : SELECT * FROM orders WHERE NOT ((odate = 10/03/96 AND snum > 1002) OR amt > 2000.00); 
+mysql>>
+select * from orders where amt>2000;
+
+Q96. Which salespersons attend to customers not in the city they have been assigned to? 
+mysql>>
+select * from customer x, salespeople y where x.snum=y.snum and x.city !=y.city;
+select y.sname from customer x, salespeople y where x.snum=y.snum and x.city!=y.city;
+
+Q97. Which salespeople get commission greater than 0.11 are serving customers rated less than 250? 
+mysql>>
+select cnum, snum from customer where rating <250;
+select a.sname from salespeople a, customer b where a.snum=b.snum and a.comm > 0.11 and b.rating < 250;
+
+Q98. Which salespeople have been assigned to the same city but get different commission percentages? 
+mysql>>
+select a.sname, b.sname from salespeople a, salespeople b where a.city = b.city and a.comm!=b.comm;
+
+***Q99. Which salesperson has earned the most by way of commission?
+mysql>>
+select b.snum, c.sname, sum(c.comm*a.amt) 'commission' from orders a, customer b, salespeople c where a.cnum=b.cnum and b.snum=c.snum group by b.snum order by commission desc limit 1;
+
+****Q100.Does the customer who has placed the maximum number of orders have the maximum rating?  
+mysql>>
+select * from orders x, customer z where x.cnum=y.cnum;
