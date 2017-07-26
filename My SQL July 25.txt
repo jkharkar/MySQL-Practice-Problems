@@ -1,0 +1,144 @@
+Q101.Has the customer who has spent the largest amount of money been given the highest rating? 
+mysql>>
+select max(x.total) from (select b.cnum, sum(a.amt) 'total' from orders a, customer b where a.cnum=b.cnum group by b.cnum) x;
+select max(rating) from customer;
+select m.cnum, m.rating, sum(n.amt) 'totalq' from orders n, customer m where n.cnum=m.cnum and rating=(select max(z.rating) from customer z) group by m.cnum having totalq = (select max(x.total) from (select b.cnum, sum(a.amt) 'total' from orders a, customer b where a.cnum=b.cnum group by b.cnum) x);
+
+102.List all customers in descending order of customer rating. 
+mysql>>
+select cname, rating from customer order by rating desc
+
+103.On which days has Hoffman placed orders? 
+mysql>>
+select * from orders a, customer b where a.cnum =b.cnum;
+select b.cnum, a.odate from orders a, customer b where a.cnum=b.cnum;
+select b.cnum, a.odate from orders a, customer b where a.cnum=b.cnum and b.cname='Hoffmann';
+
+104.Do all salespeople have different commissions? 
+mysql>>
+select count(*) from salespeople;
+select count(distinct(comm)) from salespeople;
+select "yes" as "output" from dual where (select count(*) from salespeople) = (select count(distinct(comm)) from salespeople)
+UNION
+select "no" from dual where (select count(*) from salespeople) != (select count(distinct(comm)) from salespeople);
+
+
+105.Which salespeople have no orders between 10/03/1996 and 10/05/1996? 
+mysql>>
+select distinct(b.snum) from orders a, customer b where a.cnum=b.cnum and a.odate between '1996-10-03' and '1996-10-05';
+
+select * from orders m, customer n where m.cnum=n.cnum and n.snum not in (select distinct(b.snum) from orders a, customer b where a.cnum=b.cnum and a.odate between '1996-10-03' and '1996-10-05');
+
+106.How many salespersons have succeeded in getting orders? 
+mysql>>
+select count(distinct(b.snum)) from orders a, customer b where a.cnum=b.cnum;
+
+107.How many customers have placed orders? 
+mysql>>
+select count(distinct(cnum)) from orders;
+
+108.On which date has each salesperson booked an order of maximum value? 
+mysql>>
+select r.snum, r.sname, p.amt, p.odate from orders p, customer q, salespeople r where p.cnum=q.cnum and q.snum=r.snum and p.amt = (select max(a.amt) from orders a, customer b where a.cnum=b.cnum and b.snum=r.snum);
+
+
+109.Who is the most successful salesperson? 
+mysql>>
+select * from orders a, customer b where a.cnum=b.cnum;
+
+select b.snum, sum(a.amt) 'total' from orders a, customer b where a.cnum=b.cnum group by b.snum order by total desc;
+select b.snum,  c.sname, sum(a.amt) 'total' from orders a, customer b, salespeople c where a.cnum=b.cnum and b.snum=c.snum group by b.snum order by total desc limit 1;
+
+110.Who is the worst customer with respect to the company? 
+mysql>>
+select * from orders a, customer b where a.cnum=b.cnum;
+select b.cnum, b.cname, sum(a.amt)' Total' from orders a, customer b where a.cnum=b.cnum order by Total asc limit 1;
+
+111.Are all customers not having placed orders greater than 200 totally been serviced by salespersons Peel or Serres? 
+mysql>>
+select a.onum, a.amt, c.sname from orders a, customer b, salespeople c where a.cnum=b.cnum and b.snum=c.snum and a.amt > 200;
+
+112.Which customers have the same rating? 
+mysql>>
+select a.cname, b.cname from customer a, customer b where a.rating=b.rating and a.cnum!=b.cnum;
+
+113.Find all orders greater than the average for October 4th.
+mysql>>
+select avg(amt) from orders where odate='1996-10-04';
+select * from orders a where a.amt > (select avg(amt) from orders where odate='1996-10-04');
+ 
+114.Which customers have above average orders? 
+mysql>>
+select distinct(a.cnum), b.cname from orders a, customer b where a.cnum=b.cnum and a.amt > (select avg(amt) from orders);
+
+115.List all customers with ratings above San Jose’s average. 
+mysql>>
+select avg(rating) from customer where city='San Jose';
+select * from customer x where x.rating > (select avg(rating) from customer where city='San Jose');
+
+116.Select the total amount in orders for each salesperson for whom the total is greater than the amount of the largest order in the table. 
+mysql>>
+select b.snum, sum(a.amt) 'Total' from orders a, customer b, where a.cnum=b.cnum group by b.snum having Total > (select max(amt) from orders);
+
+117.Give names and numbers of all salespersons who have more than one customer. 
+mysql>>
+select * from customer a, salespeople b where a.snum=b.snum;
+select b.snum, b.sname from customer a, salespeople b where a.snum=b.snum;
+select b.snum, b.sname, count(*) 'No.of Customers' from customer a, salespeople b where a.snum=b.snum group by b.snum;
+select b.snum, b.sname, count(*) 'No.of Customers' from customer a, salespeople b where a.snum=b.snum group by b.snum having  No.of Customers > 1;
+
+118.Select all salespersons by name and number who have customers in their city whom they don’t service. 
+mysql>>
+select * from customer x, salespeople y where x.snum!=y.snum and x.city=y.city;
+select distinct(y.snum), y.sname from customer x, salespeople y where x.snum!=y.snum and x.city=y.city;
+
+119.Which customers’ rating should be lowered? 
+mysql>>
+select b.cnum, b.cname, sum(a.amt) from orders a, customer b, salespeople c where a.cnum=b.cnum and b.snum=c.snum group by b.cnum; 
+
+120.Is there a case for assigning a salesperson to Berlin? 
+mysql>>
+select "Yes" as "output" from dual where exists (select * from customer a, salespeople b where a.snum=b.snum and a.city='Berlin')
+UNION
+select "No" from dual where not exists (select * from customer a, salespeople b where a.snum=b.snum and a.city='Berlin');
+
+121.Is there any evidence linking the performance of a salesperson to the commission that he or she is being paid?
+mysql>>
+select b.snum, sum(a.amt), c.comm from orders a, customer b, salespeople c where a.cnum=b.cnum and b.snum=c.snum group by b.snum;
+
+1001 is underpaid
+1007 is overpaid
+
+ 122.Does the total amount in orders by customer in Rome and London exceed the commission paid to salespersons in London and New York by more than 5 times? 
+mysql>>
+select * from orders a, customer b where a.cnum=b.cnum and b.city in ('London', 'Rome');
+
+TOTAL AMT
+select sum(amt) 'total' from orders a, customer b where a.cnum=b.cnum and b.city in ('London', 'Rome');
+
+select a.amt, c.comm, a.onum from orders a, customer b, salespeople c where a.cnum=b.cnum and b.snum=c.snum and c.city in ('London','New York');
+
+select (a.amt*c.comm) from orders a, customer b, salespeople c where a.cnum=b.cnum and b.snum=c.snum and c.city in ('London','New York');
+
+TOTAL COMM FOR NY AND LON SALESPEOPLE
+select sum(a.amt*c.comm) from orders a, customer b, salespeople c where a.cnum=b.cnum and b.snum=c.snum and c.city in ('London','New York');
+
+select "Yes" as "Output" from dual where (select sum(amt) 'total' from orders a, customer b where a.cnum=b.cnum and b.city in ('London', 'Rome')) > 5*(select sum(a.amt*c.comm) from orders a, customer b, salespeople c where a.cnum=b.cnum and b.snum=c.snum and c.city in ('London','New York'))
+UNION
+select "No" from dual where (select sum(amt) 'total' from orders a, customer b where a.cnum=b.cnum and b.city in ('London', 'Rome')) <= 5*(select sum(a.amt*c.comm) from orders a, customer b, salespeople c where a.cnum=b.cnum and b.snum=c.snum and c.city in ('London','New York'));
+
+
+123.Which is the date, order number, amt and city for each salesperson (by name) for the maximum order he has obtained? 
+mysql>>
+select c.snum, c.sname, a.odate, a.onum, a.amt, c.city from orders a, customer b, salespeople c where a.cnum=b.cnum and b.snum=c.snum and a.amt = (select max(n.amt) from orders n, customer m where n.cnum=m.cnum and m.snum = c.snum group by m.snum);
+
+124.Which salesperson(s) should be fired? 
+mysql>>
+select c.snum, c.sname, sum(a.amt) from orders a, customer b, salespeople c where a.cnum=b.cnum and b.snum=c.snum group by c.snum;
+
+
+125.What is the total income for the company?
+mysql>>
+select sum(amt) 'Total amt' from orders;
+
+----------------------------------------------------------------------------------------------------------------
